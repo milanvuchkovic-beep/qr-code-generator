@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masovni QR Kod Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Masovni QR Kod Generator</h1>
+
+        <div class="input-section">
+            <p>Nalepite podatke (svaki u novom redu) ili otpremite Excel fajl.</p>
+            
+            <textarea id="bulk-input" rows="8" placeholder="https://www.google.com&#10;https://www.youtube.com&#10;ID-Produkta-12345"></textarea>
+
+            <label for="excel-upload" class="file-upload-label">
+                📂 Izaberi Excel Fajl (.xlsx, .xls)
+            </label>
+            <input type="file" id="excel-upload" accept=".xlsx, .xls">
+            <span id="file-name">Nijedan fajl nije izabran</span>
+
+            <button id="generate-bulk-btn">Generiši QR Kodove</button>
+        </div>
+        
+        <div id="output-header" style="display: none;">
+            <h2>Generisani Kodovi</h2>
+            <button id="download-zip-btn">Preuzmi sve (.zip)</button>
+        </div>
+
+        <div id="qrcode-container">
+            </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
