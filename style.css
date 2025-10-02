@@ -122,4 +122,25 @@ textarea {
     font-size: 12px;
     font-weight: bold;
     color: #333;
+
+}
+
+.button-group {
+    display: flex;
+    gap: 10px; /* Mali razmak između dugmića */
+    margin-top: 15px; /* Odvajanje od elemenata iznad */
+}
+
+.button-group button {
+    flex-grow: 1; /* Omogućava da oba dugmeta zauzmu podjednako prostora */
+}
+
+/* Stil za novo dugme "Očisti" */
+#clear-btn {
+    background-color: #6c757d; /* Neutralna siva boja */
+    color: white;
+}
+
+#clear-btn:hover {
+    background-color: #5a6268;
 }
