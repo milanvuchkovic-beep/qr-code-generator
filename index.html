@@ -22,7 +22,10 @@
             <input type="file" id="excel-upload" accept=".xlsx, .xls">
             <span id="file-name">Nijedan fajl nije izabran</span>
 
-            <button id="generate-bulk-btn">Generiši QR Kodove</button>
+            <div class="button-group">
+                <button id="generate-bulk-btn">Generiši QR Kodove</button>
+                <button type="button" id="clear-btn">Očisti Unos</button>
+            </div>
         </div>
         
         <div id="output-header" style="display: none;">
@@ -40,4 +43,5 @@
     
     <script src="script.js"></script>
 </body>
+
 </html>
