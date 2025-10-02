@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrcodeContainer = document.getElementById('qrcode-container');
     const outputHeader = document.getElementById('output-header');
     const downloadZipBtn = document.getElementById('download-zip-btn');
+    const clearBtn = document.getElementById('clear-btn'); 
     
     let uploadedFile = null;
 
@@ -144,5 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(link);
         });
     });
+
+            // Funkcionalnost za dugme "Očisti"
+        clearBtn.addEventListener('click', () => {
+            // 1. Očisti tekstualno polje
+            bulkInput.value = '';
+        
+            // 2. Očisti prikazane QR kodove
+            qrcodeContainer.innerHTML = '';
+        
+            // 3. Sakrij zaglavlje sa dugmetom za preuzimanje
+            outputHeader.style.display = 'none';
+        
+            // 4. Resetuj informaciju o otpremljenom fajlu
+            excelUpload.value = null; // Ovo omogućava ponovni upload istog fajla
+            uploadedFile = null;
+            fileNameSpan.textContent = 'Nijedan fajl nije izabran';
+        });
 
 });
