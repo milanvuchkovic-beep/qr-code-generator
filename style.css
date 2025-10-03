@@ -144,3 +144,39 @@ textarea {
 #clear-btn:hover {
     background-color: #5a6268;
 }
+
+/* =================================== */
+/* === Optimizacija za mobilne uređaje === */
+/* =================================== */
+
+/* Pravila unutar ovog bloka primenjivaće se samo na ekranima užim od 600px */
+@media (max-width: 600px) {
+
+    /* Smanjujemo padding glavnog kontejnera da dobijemo više prostora */
+    .container {
+        padding: 15px;
+        width: 95%; /* Zauzimamo malo više širine ekrana */
+    }
+
+    /* Menjamo prikaz QR kodova u jednu kolonu */
+    #qrcode-container {
+        /* Umesto više kolona, sada će biti samo jedna */
+        grid-template-columns: 1fr;
+        gap: 15px; /* Smanjujemo i razmak između kodova */
+    }
+
+    /* Dugmiće stavljamo jedan ispod drugog radi bolje preglednosti */
+    .button-group {
+        flex-direction: column;
+    }
+
+    /* Malo smanjujemo naslov da lepše stane */
+    h1 {
+        font-size: 26px;
+    }
+
+    .logo {
+        max-width: 100px; /* Možemo malo smanjiti i logo */
+    }
+}
+
