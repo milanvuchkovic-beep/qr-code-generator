@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const startSerial = parseInt(document.getElementById('start-serial').value, 10);
 
         // Validacija
-        if (partNumber.length !== 11 || supplierCode.length !== 5 || !dateInput || isNaN(quantity) || isNaN(startSerial)) {
+        if (partNumber.length === 0 || supplierCode.length === 0 || !dateInput || isNaN(quantity) || isNaN(startSerial)) {
             alert("Molimo vas, popunite sva polja ispravno.");
             return;
         }
