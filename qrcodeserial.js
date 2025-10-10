@@ -12,19 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
             styleTag.id = 'print-styles';
             document.head.appendChild(styleTag);
         }
-        const margin = 3;
-        const printWidth = width - (margin * 2);
-        const printHeight = height - (margin * 2);
+        
+        // Dinamički kreira @page pravilo za štampu
         styleTag.innerHTML = `
             @media print {
                 @page {
                     size: ${width}mm ${height}mm;
-                    margin: ${margin}mm;
-                }
-                .label-item {
-                    box-sizing: border-box;
-                    width: ${printWidth}mm;
-                    height: ${printHeight - 0.5}mm;
+                    margin: 0;
                 }
             }
         `;
@@ -76,14 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
             labelItem.className = 'label-item';
             const thresholdWidth = 50;
             
-            const printableHeightMM = labelHeight - 6;
-            const printableWidthMM = labelWidth - 6;
+            const printableHeightMM = labelHeight - 4; // 4mm = 2 * 2mm padding
+            const printableWidthMM = labelWidth - 4;
             let baseDimensionMM = Math.min(printableWidthMM, printableHeightMM);
             
             if (labelWidth < thresholdWidth) {
                  baseDimensionMM = printableHeightMM * 0.8;
             } else {
-                 baseDimensionMM = printableHeightMM * 0.9;
+                 baseDimensionMM = Math.min(printableWidthMM * 0.4, printableHeightMM * 0.9);
             }
             
             const qrCodeSizePX = Math.round(baseDimensionMM * 3.78);
