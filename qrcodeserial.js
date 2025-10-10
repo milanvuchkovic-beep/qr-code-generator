@@ -6,68 +6,115 @@ document.addEventListener('DOMContentLoaded', () => {
     const printBtn = document.getElementById('print-btn');
     const labelsContainer = document.getElementById('labels-container');
 
-    // Helper funkcija za formatiranje datuma u GGGYY
-    function formatJulianDate(date) {
-        const year = date.getFullYear();
-        const startOfYear = new Date(year, 0, 0);
-        const diff = date - startOfYear;
-        const oneDay = 1000 * 60 * 60 * 24;
-        const dayOfYear = Math.floor(diff / oneDay).toString().padStart(3, '0');
-        const yearShort = year.toString().slice(-2);
-        return dayOfYear + yearShort;
+    // --- FUNKCIJE ---
+
+    // Funkcija koja dinamički kreira i ažurira stilove za štampu
+    function updatePrintStyles(width, height) {
+        let styleTag = document.getElementById('print-styles');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'print-styles';
+            document.head.appendChild(styleTag);
+        }
+
+        const margin = 3; // Margina u mm
+        const printWidth = width - (margin * 2);
+        const printHeight = height - (margin * 2);
+
+        styleTag.innerHTML = `
+            @media print {
+                @page {
+                    size: ${width}mm ${height}mm;
+                    margin: ${margin}mm;
+                }
+                .label-item {
+                    box-sizing: border-box;
+                    width: ${printWidth}mm;
+                    height: ${printHeight - 0.5}mm; /* Trik za izbegavanje prelamanja */
+                }
+            }
+        `;
+    }
+    
+    // Funkcije za formatiranje datuma
+    function formatDateForDisplay(date) {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear().toString().slice(-2);
+        return `${d}/${m}/${y}`;
     }
 
-    // Helper funkcija za formatiranje serijskog broja (npr. 1 -> "00001")
+    function formatDateForQR(date) {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear().toString().slice(-2);
+        return `${d}${m}${y}`;
+    }
+    
     function padSerialNumber(num) {
         return num.toString().padStart(5, '0');
     }
 
+    // --- GLAVNI DOGAĐAJ ---
+
     generateBtn.addEventListener('click', () => {
-        // Prikupljanje fiksnih podataka
+        // Prikupljanje svih podataka iz forme
         const partNumber = document.getElementById('part-number').value.toUpperCase();
         const supplierCode = document.getElementById('supplier-code').value.toUpperCase();
         const dateInput = document.getElementById('date-input').value;
-        
-        // Prikupljanje podataka za seriju
         const quantity = parseInt(document.getElementById('quantity').value, 10);
         const startSerial = parseInt(document.getElementById('start-serial').value, 10);
+        const labelWidth = parseFloat(document.getElementById('label-width').value);
+        const labelHeight = parseFloat(document.getElementById('label-height').value);
 
         // Validacija
-        if (partNumber.length === 0 || supplierCode.length === 0 || !dateInput || isNaN(quantity) || isNaN(startSerial)) {
-            alert("Molimo vas, popunite sva polja ispravno.");
+        if (!partNumber || !supplierCode || !dateInput || !quantity || !startSerial || !labelWidth || !labelHeight) {
+            alert("Molimo vas, popunite sva obavezna polja.");
             return;
         }
 
-        // Brišemo prethodne nalepnice
-        labelsContainer.innerHTML = ''; 
+        // 1. Ažuriramo stilove za štampu na osnovu unetih dimenzija
+        updatePrintStyles(labelWidth, labelHeight);
 
-        const julianDate = formatJulianDate(new Date(dateInput));
+        labelsContainer.innerHTML = '';
+        const selectedDate = new Date(dateInput);
+        const displayDate = formatDateForDisplay(selectedDate);
+        const qrDate = formatDateForQR(selectedDate);
         const endSerial = startSerial + quantity - 1;
 
         // Glavna petlja za generisanje
         for (let i = startSerial; i <= endSerial; i++) {
             const currentSerial = padSerialNumber(i);
-            const qrData = partNumber + supplierCode + currentSerial + julianDate;
-
-            // Kreiraj kontejner za jednu nalepnicu
+            const qrData = partNumber + supplierCode + currentSerial + qrDate;
             const labelItem = document.createElement('div');
             labelItem.className = 'label-item';
 
-            // Kreiraj HTML za nalepnicu
-            labelItem.innerHTML = `
-                <div class="qr-code-area" id="qr-code-${i}"></div>
-                <div class="data-fields-qr">
-                    <div><strong>Dis. FCA:</strong> ${partNumber}</div>
-                    <div><strong>Supplier:</strong> ${supplierCode}</div>
-                    <div><strong>S/N:</strong> ${currentSerial}</div>
-                    <div><strong>Data:</strong> ${julianDate}</div>
-                </div>
-            `;
+            // --- PAMETNI RASPORED ---
+            // Biramo izgled nalepnice na osnovu širine
+            const thresholdWidth = 50; // Granica u mm
+
+            if (labelWidth < thresholdWidth) {
+                // MALI IZGLED: Samo QR kod i tekst ispod
+                labelItem.classList.add('small-layout');
+                labelItem.innerHTML = `
+                    <div class="qr-code-area" id="qr-code-${i}"></div>
+                    <div class="small-layout-text">${qrData}</div>
+                `;
+            } else {
+                // VELIKI IZGLED: Standardni, sa podacima sa strane
+                labelItem.innerHTML = `
+                    <div class="qr-code-area" id="qr-code-${i}"></div>
+                    <div class="data-fields-qr">
+                        <div><strong>Dis. FCA:</strong> ${partNumber}</div>
+                        <div><strong>Supplier:</strong> ${supplierCode}</div>
+                        <div><strong>S/N:</strong> ${currentSerial}</div>
+                        <div><strong>Data:</strong> ${displayDate}</div> 
+                    </div>
+                `;
+            }
             
-            // Dodaj nalepnicu na stranicu
             labelsContainer.appendChild(labelItem);
 
-            // Generiši QR kod za ovu nalepnicu
             new QRCode(document.getElementById(`qr-code-${i}`), {
                 text: qrData,
                 width: 100,
@@ -76,13 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Prikazujemo dugme za štampu ako su generisane nalepnice
         if (quantity > 0) {
             printBtn.style.display = 'block';
         }
     });
 
-    // Funkcionalnost za dugme "Odštampaj"
     printBtn.addEventListener('click', () => {
         window.print();
     });
