@@ -1,14 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Postavljanje današnjeg datuma kao podrazumevanog
     document.getElementById('date-input').valueAsDate = new Date();
 
     const generateBtn = document.getElementById('generate-btn');
     const printBtn = document.getElementById('print-btn');
     const labelsContainer = document.getElementById('labels-container');
 
-    // --- FUNKCIJE ---
-
-    // Funkcija koja dinamički kreira i ažurira stilove za štampu
     function updatePrintStyles(width, height) {
         let styleTag = document.getElementById('print-styles');
         if (!styleTag) {
@@ -16,11 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
             styleTag.id = 'print-styles';
             document.head.appendChild(styleTag);
         }
-
-        const margin = 3; // Margina u mm
+        const margin = 3;
         const printWidth = width - (margin * 2);
         const printHeight = height - (margin * 2);
-
         styleTag.innerHTML = `
             @media print {
                 @page {
@@ -30,13 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .label-item {
                     box-sizing: border-box;
                     width: ${printWidth}mm;
-                    height: ${printHeight - 0.5}mm; /* Trik za izbegavanje prelamanja */
+                    height: ${printHeight - 0.5}mm;
                 }
             }
         `;
     }
-    
-    // Funkcije za formatiranje datuma
+
     function formatDateForDisplay(date) {
         const d = date.getDate().toString().padStart(2, '0');
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -50,15 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = date.getFullYear().toString().slice(-2);
         return `${d}${m}${y}`;
     }
-    
+
     function padSerialNumber(num) {
         return num.toString().padStart(5, '0');
     }
 
-    // --- GLAVNI DOGAĐAJ ---
-
     generateBtn.addEventListener('click', () => {
-        // Prikupljanje svih podataka iz forme
         const partNumber = document.getElementById('part-number').value.toUpperCase();
         const supplierCode = document.getElementById('supplier-code').value.toUpperCase();
         const dateInput = document.getElementById('date-input').value;
@@ -67,41 +57,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const labelWidth = parseFloat(document.getElementById('label-width').value);
         const labelHeight = parseFloat(document.getElementById('label-height').value);
 
-        // Validacija
         if (!partNumber || !supplierCode || !dateInput || !quantity || !startSerial || !labelWidth || !labelHeight) {
             alert("Molimo vas, popunite sva obavezna polja.");
             return;
         }
 
-        // 1. Ažuriramo stilove za štampu na osnovu unetih dimenzija
         updatePrintStyles(labelWidth, labelHeight);
-
         labelsContainer.innerHTML = '';
         const selectedDate = new Date(dateInput);
         const displayDate = formatDateForDisplay(selectedDate);
         const qrDate = formatDateForQR(selectedDate);
         const endSerial = startSerial + quantity - 1;
 
-        // Glavna petlja za generisanje
         for (let i = startSerial; i <= endSerial; i++) {
             const currentSerial = padSerialNumber(i);
             const qrData = partNumber + supplierCode + currentSerial + qrDate;
             const labelItem = document.createElement('div');
             labelItem.className = 'label-item';
+            const thresholdWidth = 50;
 
-            // --- PAMETNI RASPORED ---
-            // Biramo izgled nalepnice na osnovu širine
-            const thresholdWidth = 50; // Granica u mm
+            // --- NOVI DEO: DINAMIČKO IZRAČUNAVANJE VELIČINE QR KODA ---
+            const printableHeightMM = labelHeight - 6; // 6mm = 2 * 3mm margine
+            const printableWidthMM = labelWidth - 6;
+            
+            // Bira manju od dve dimenzije kao osnovu za veličinu QR koda
+            let baseDimensionMM = Math.min(printableWidthMM, printableHeightMM);
+            
+            // Za male nalepnice, QR kod zauzima veći procenat prostora
+            if (labelWidth < thresholdWidth) {
+                 baseDimensionMM = printableHeightMM * 0.8; // Zauzima 80% raspoložive visine
+            } else {
+                 baseDimensionMM = printableHeightMM * 0.9; // Na većim nalepnicama može biti veći
+            }
+            
+            // Pretvaramo milimetre u piksele (gruba konverzija, 1mm ≈ 3.78px)
+            const qrCodeSizePX = Math.round(baseDimensionMM * 3.78);
+
 
             if (labelWidth < thresholdWidth) {
-                // MALI IZGLED: Samo QR kod i tekst ispod
                 labelItem.classList.add('small-layout');
                 labelItem.innerHTML = `
                     <div class="qr-code-area" id="qr-code-${i}"></div>
                     <div class="small-layout-text">${qrData}</div>
                 `;
             } else {
-                // VELIKI IZGLED: Standardni, sa podacima sa strane
                 labelItem.innerHTML = `
                     <div class="qr-code-area" id="qr-code-${i}"></div>
                     <div class="data-fields-qr">
@@ -115,10 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             labelsContainer.appendChild(labelItem);
 
+            // Ubacujemo izračunatu veličinu u generator
             new QRCode(document.getElementById(`qr-code-${i}`), {
                 text: qrData,
-                width: 100,
-                height: 100,
+                width: qrCodeSizePX,
+                height: qrCodeSizePX,
                 correctLevel: QRCode.CorrectLevel.H
             });
         }
@@ -127,6 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
             printBtn.style.display = 'block';
         }
     });
+
+    printBtn.addEventListener('click', () => {
+        window.print();
+    });
+});
 
     printBtn.addEventListener('click', () => {
         window.print();
