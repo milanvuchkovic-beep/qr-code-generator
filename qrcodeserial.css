@@ -28,7 +28,7 @@ button:hover { background: #0056b3; }
 @media print {
     @page {
         /* Ove vrednosti će JavaScript dinamički menjati, ali postavljamo default */
-        size: 30mm 20mm;
+        size: 30mm 20mm landscape;
         margin: 0; 
     }
 
