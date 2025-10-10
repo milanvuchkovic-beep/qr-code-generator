@@ -35,6 +35,21 @@ button:hover { background: #0056b3; }
 .data-fields-qr { font-size: 12px; font-family: 'Courier New', Courier, monospace; }
 .data-fields-qr div { margin-bottom: 4px; }
 
+/* Stil za nalepnicu sa malim rasporedom */
+.label-item.small-layout {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Stil za tekst ispod QR koda na malim nalepnicama */
+.small-layout-text {
+    font-size: 7pt;
+    font-family: 'Courier New', Courier, monospace;
+    word-break: break-all; /* Dozvoljava prelamanje dugačkog teksta */
+    text-align: center;
+}
 /* ======================================= */
 /* === PRIPREMA ZA ŠTAMPU - NALEPNICA 70x40mm (V2 - Poboljšano) === */
 /* ======================================= */
