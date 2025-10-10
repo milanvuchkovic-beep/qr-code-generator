@@ -35,12 +35,39 @@ button:hover { background: #0056b3; }
 .data-fields-qr { font-size: 12px; font-family: 'Courier New', Courier, monospace; }
 .data-fields-qr div { margin-bottom: 4px; }
 
-/* Priprema za štampu */
+/* ======================================= */
+/* === PRIPREMA ZA ŠTAMPU - NALEPNICA 70x40mm === */
+/* ======================================= */
+
 @media print {
-    /* Sakrij sve što nije nalepnica */
+    /* 1. Definišemo novu veličinu nalepnice */
+    @page {
+        size: 70mm 40mm;
+        margin: 3mm; /* Smanjujemo marginu za manju nalepnicu */
+    }
+
+    /* Sakrivamo sve što nije kontejner sa nalepnicama */
     .no-print { display: none; }
     body { background-color: #fff; padding: 0; margin: 0; }
-    #labels-container { margin: 0; }
-    /* Ukloni senke i ivice koje nisu deo nalepnice */
-    .label-item { box-shadow: none; }
+    #labels-container { margin: 0; padding: 0; }
+
+    /* 2. Stil za jednu nalepnicu prilagođen novim dimenzijama */
+    .label-item {
+        width: 64mm;  /* 70mm - 2*3mm margine */
+        height: 34mm; /* 40mm - 2*3mm margine */
+        border: 1px dashed #666;
+        box-shadow: none;
+        page-break-after: always;
+        
+        /* 3. Vraćamo raspored jedan pored drugog (horizontalno) */
+        flex-direction: row; 
+        justify-content: flex-start; /* Poravnanje na početak */
+        align-items: center;
+        gap: 5mm; /* Razmak između QR koda i teksta */
+    }
+    
+    /* 4. Smanjujemo font da bi stao na manju nalepnicu */
+    .data-fields-qr {
+        font-size: 9pt; 
+    }
 }
