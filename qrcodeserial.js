@@ -75,24 +75,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const labelItem = document.createElement('div');
             labelItem.className = 'label-item';
             const thresholdWidth = 50;
-
-            // --- NOVI DEO: DINAMIČKO IZRAČUNAVANJE VELIČINE QR KODA ---
-            const printableHeightMM = labelHeight - 6; // 6mm = 2 * 3mm margine
-            const printableWidthMM = labelWidth - 6;
             
-            // Bira manju od dve dimenzije kao osnovu za veličinu QR koda
+            const printableHeightMM = labelHeight - 6;
+            const printableWidthMM = labelWidth - 6;
             let baseDimensionMM = Math.min(printableWidthMM, printableHeightMM);
             
-            // Za male nalepnice, QR kod zauzima veći procenat prostora
             if (labelWidth < thresholdWidth) {
-                 baseDimensionMM = printableHeightMM * 0.8; // Zauzima 80% raspoložive visine
+                 baseDimensionMM = printableHeightMM * 0.8;
             } else {
-                 baseDimensionMM = printableHeightMM * 0.9; // Na većim nalepnicama može biti veći
+                 baseDimensionMM = printableHeightMM * 0.9;
             }
             
-            // Pretvaramo milimetre u piksele (gruba konverzija, 1mm ≈ 3.78px)
             const qrCodeSizePX = Math.round(baseDimensionMM * 3.78);
-
 
             if (labelWidth < thresholdWidth) {
                 labelItem.classList.add('small-layout');
@@ -114,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             labelsContainer.appendChild(labelItem);
 
-            // Ubacujemo izračunatu veličinu u generator
             new QRCode(document.getElementById(`qr-code-${i}`), {
                 text: qrData,
                 width: qrCodeSizePX,
@@ -127,11 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             printBtn.style.display = 'block';
         }
     });
-
-    printBtn.addEventListener('click', () => {
-        window.print();
-    });
-});
 
     printBtn.addEventListener('click', () => {
         window.print();
