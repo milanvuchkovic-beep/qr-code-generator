@@ -36,37 +36,42 @@ button:hover { background: #0056b3; }
 .data-fields-qr div { margin-bottom: 4px; }
 
 /* ======================================= */
-/* === PRIPREMA ZA ŠTAMPU - NALEPNICA 70x40mm === */
+/* === PRIPREMA ZA ŠTAMPU - NALEPNICA 70x40mm (V2 - Poboljšano) === */
 /* ======================================= */
 
 @media print {
-    /* 1. Definišemo novu veličinu nalepnice */
     @page {
         size: 70mm 40mm;
-        margin: 3mm; /* Smanjujemo marginu za manju nalepnicu */
+        margin: 3mm;
     }
 
-    /* Sakrivamo sve što nije kontejner sa nalepnicama */
     .no-print { display: none; }
     body { background-color: #fff; padding: 0; margin: 0; }
     #labels-container { margin: 0; padding: 0; }
 
-    /* 2. Stil za jednu nalepnicu prilagođen novim dimenzijama */
     .label-item {
-        width: 64mm;  /* 70mm - 2*3mm margine */
-        height: 34mm; /* 40mm - 2*3mm margine */
+        /* --- KLJUČNE IZMENE SU OVDE --- */
+
+        /* 1. Kažemo pregledaču da uracuna ivicu (border) u ukupnu visinu i širinu */
+        box-sizing: border-box;
+
+        width: 64mm;
+        /* 2. MALI TRIK: Pravimo nalepnicu za nijansu nižom od prostora da izbegnemo prelamanje */
+        height: 33.5mm;
+
         border: 1px dashed #666;
         box-shadow: none;
         page-break-after: always;
+        page-break-inside: avoid; /* Ostavljamo i ovo za svaki slučaj */
         
-        /* 3. Vraćamo raspored jedan pored drugog (horizontalno) */
+        /* Ostatak stila za raspored ostaje isti */
+        display: flex; 
         flex-direction: row; 
-        justify-content: flex-start; /* Poravnanje na početak */
+        justify-content: flex-start;
         align-items: center;
-        gap: 5mm; /* Razmak između QR koda i teksta */
+        gap: 5mm;
     }
     
-    /* 4. Smanjujemo font da bi stao na manju nalepnicu */
     .data-fields-qr {
         font-size: 9pt; 
     }
