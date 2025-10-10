@@ -9,17 +9,16 @@
 <body>
 
     <div class="container no-print">
-        <img src="https://i.postimg.cc/L6KLbH84/Pogon-io-LOGO-vertical.png" alt="Logo Pogon" style="width: 100px; margin: 0 auto 20px auto; display: block;">
-        <h1>SERIJSKI QR GENERATOR (FCA)</h1>
+        <h1>Serijski QR Generator (FCA)</h1>
         <p>Unesite fiksne podatke i opseg za serijsko generisanje nalepnica.</p>
         
         <div class="form-section">
             <div class="form-group">
-                <label for="part-number">Part Number (maksimalno 11 karaktera)</label>
-                <input type="text" id="part-number" maxlength="11" placeholder="npr. 9857722180">
+                <label for="part-number">Part Number</label>
+                <input type="text" id="part-number" maxlength="11" placeholder="npr. P-006243-A07">
             </div>
             <div class="form-group">
-                <label for="supplier-code">Supplier Code (5 karaktera)</label>
+                <label for="supplier-code">Supplier Code</label>
                 <input type="text" id="supplier-code" maxlength="5" placeholder="npr. 0X123">
             </div>
             <div class="form-group">
@@ -28,11 +27,11 @@
             </div>
             <div class="form-group">
                 <label for="label-width">Širina nalepnice (mm)</label>
-                <input type="number" id="label-width" value="70">
+                <input type="number" id="label-width" value="30">
             </div>
             <div class="form-group">
                 <label for="label-height">Visina nalepnice (mm)</label>
-                <input type="number" id="label-height" value="40">
+                <input type="number" id="label-height" value="20">
             </div>
             <div class="form-group">
                 <label for="quantity">Količina nalepnica</label>
@@ -51,6 +50,11 @@
 
     <div id="labels-container">
         </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <script src="qrcodeserial.js"></script>
+</body>
+</html>
 
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <script src="qrcodeserial.js"></script>
