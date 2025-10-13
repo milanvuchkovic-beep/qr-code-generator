@@ -1,59 +1,131 @@
-body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px; }
-.container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-h1, p { text-align: center; }
-.form-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-.form-group { display: flex; flex-direction: column; }
-label { margin-bottom: 5px; font-size: 14px; color: #333; }
-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-.button-group { display: flex; gap: 10px; }
-button { flex-grow: 1; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 4px; font-size: 18px; cursor: pointer; }
-button:hover { background: #0056b3; }
-#export-csv-btn { background-color: #28a745; }
-#export-csv-btn:hover { background-color: #218838; }
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('date-input').valueAsDate = new Date();
 
-#labels-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
-.label-item { width: 350px; border: 1px solid #000; padding: 10px; display: flex; gap: 10px; align-items: center; background: #fff; page-break-inside: avoid; }
-.qr-code-area { flex-shrink: 0; }
-.data-fields-qr { font-size: 12px; font-family: 'Courier New', Courier, monospace; }
-.data-fields-qr div { margin-bottom: 4px; }
+    const generateBtn = document.getElementById('generate-btn');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
+    const labelsContainer = document.getElementById('labels-container');
+    
+    let generatedDataForCsv = [];
 
-.label-item.small-layout { flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 200px; }
-.small-layout-text { font-size: 8px; font-family: 'Courier New', Courier, monospace; word-break: break-all; text-align: center; }
+    function updatePrintStyles(width, height) {
+        let styleTag = document.getElementById('print-styles');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'print-styles';
+            document.head.appendChild(styleTag);
+        }
+        styleTag.innerHTML = `
+            @media print {
+                @page {
+                    size: ${width}mm ${height}mm landscape;
+                    margin: 0;
+                }
+            }
+        `;
+    }
 
-@media print {
-    @page {
-        size: 30mm 15mm landscape;
-        margin: 0; 
+    function formatDateForDisplay(date) {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear().toString().slice(-2);
+        return `${d}/${m}/${y}`;
     }
-    .no-print { display: none; }
-    body { background-color: #fff; padding: 0; margin: 0; }
-    #labels-container { margin: 0; padding: 0; }
-    .label-item {
-        box-sizing: border-box;
-        width: 100%;
-        height: 100%;
-        padding: 2mm;
-        border: none;
-        box-shadow: none;
-        page-break-after: always;
-        page-break-inside: avoid;
-        display: flex; 
-        align-items: center;
-        justify-content: center;
+
+    function formatDateForQR(date) {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear().toString().slice(-2);
+        return `${d}${m}${y}`;
     }
-    .label-item:not(.small-layout) {
-        flex-direction: row; 
-        justify-content: flex-start;
-        gap: 5mm;
+
+    function padSerialNumber(num) {
+        return num.toString().padStart(5, '0');
     }
-    .label-item:not(.small-layout) .data-fields-qr {
-        font-size: 9pt; 
-    }
-    .label-item.small-layout {
-        flex-direction: column;
-        gap: 1mm;
-    }
-     .label-item.small-layout .small-layout-text {
-        font-size: 6pt; /* Smanjen font za veoma male nalepnice */
-    }
-}
+
+    generateBtn.addEventListener('click', () => {
+        const partNumber = document.getElementById('part-number').value.toUpperCase();
+        const supplierCode = document.getElementById('supplier-code').value.toUpperCase();
+        const dateInput = document.getElementById('date-input').value;
+        const quantity = parseInt(document.getElementById('quantity').value, 10);
+        const startSerial = parseInt(document.getElementById('start-serial').value, 10);
+        const labelWidth = parseFloat(document.getElementById('label-width').value);
+        const labelHeight = parseFloat(document.getElementById('label-height').value);
+
+        if (!partNumber || !supplierCode || !dateInput || !quantity || !startSerial || !labelWidth || !labelHeight) {
+            alert("Molimo vas, popunite sva obavezna polja.");
+            return;
+        }
+
+        updatePrintStyles(labelWidth, labelHeight);
+        labelsContainer.innerHTML = '';
+        generatedDataForCsv = [];
+        const selectedDate = new Date(dateInput);
+        const displayDate = formatDateForDisplay(selectedDate);
+        const qrDate = formatDateForQR(selectedDate);
+        const endSerial = startSerial + quantity - 1;
+
+        for (let i = startSerial; i <= endSerial; i++) {
+            const currentSerial = padSerialNumber(i);
+            const qrData = partNumber + supplierCode + currentSerial + qrDate;
+
+            generatedDataForCsv.push({partNumber, supplierCode, serialNumber: currentSerial, displayDate, qrData});
+
+            const labelItem = document.createElement('div');
+            labelItem.className = 'label-item';
+            const thresholdWidth = 50;
+
+            const printableHeightMM = labelHeight - 4; // 4mm = 2 * 2mm padding
+            const printableWidthMM = labelWidth - 4;
+            const baseDimensionMM = Math.min(printableWidthMM, printableHeightMM) * 0.9; // 90% manje dimenzije
+            const matrixSizePX = Math.round(baseDimensionMM * 3.78);
+
+            if (labelWidth < thresholdWidth) {
+                labelItem.classList.add('small-layout');
+                labelItem.innerHTML = `<canvas class="barcode-canvas" id="barcode-${i}"></canvas><div class="small-layout-text">${qrData}</div>`;
+            } else {
+                labelItem.innerHTML = `
+                    <div class="qr-code-area"><canvas class="barcode-canvas" id="barcode-${i}"></canvas></div>
+                    <div class="data-fields-qr">
+                        <div><strong>Dis. FCA:</strong> ${partNumber}</div>
+                        <div><strong>Supplier:</strong> ${supplierCode}</div>
+                        <div><strong>S/N:</strong> ${currentSerial}</div>
+                        <div><strong>Data:</strong> ${displayDate}</div> 
+                    </div>
+                `;
+            }
+            
+            labelsContainer.appendChild(labelItem);
+
+            try {
+                let canvas = document.getElementById(`barcode-${i}`);
+                bwipjs.toCanvas(canvas, {
+                    bcid: 'datamatrix',
+                    text: qrData,
+                    height: matrixSizePX,
+                    width: matrixSizePX,
+                    includetext: false,
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        if (quantity > 0) {
+            exportCsvBtn.style.display = 'block';
+        }
+    });
+
+    exportCsvBtn.addEventListener('click', () => {
+        if (generatedDataForCsv.length === 0) { return; }
+        const headers = '"PartNumber","SupplierCode","SerialNumber","DisplayDate","QRData"';
+        const rows = generatedDataForCsv.map(d => `"${d.partNumber}","${d.supplierCode}","${d.serialNumber}","${d.displayDate}","${d.qrData}"`);
+        const csvContent = [headers, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "nalepnice_za_stampu.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+});
