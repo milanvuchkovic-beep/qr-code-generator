@@ -14,6 +14,12 @@ button:hover { background: #0056b3; }
 #labels-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
 .label-item { width: 350px; border: 1px solid #000; padding: 10px; display: flex; gap: 10px; align-items: center; background: #fff; page-break-inside: avoid; }
 .qr-code-area { flex-shrink: 0; }
+/* Novo pravilo za SVG element */
+.qr-code-area svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
 .data-fields-qr { font-size: 12px; font-family: 'Courier New', Courier, monospace; }
 .data-fields-qr div { margin-bottom: 4px; }
 
