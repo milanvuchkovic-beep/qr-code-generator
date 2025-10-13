@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const printBtn = document.getElementById('print-btn');
     const labelsContainer = document.getElementById('labels-container');
 
-    // Sve helper funkcije ostaju iste...
+    // Helper funkcije ostaju iste
     function updatePrintStyles(width, height) { let styleTag=document.getElementById('print-styles');if(!styleTag){styleTag=document.createElement('style');styleTag.id='print-styles';document.head.appendChild(styleTag)}styleTag.innerHTML=`@media print {@page {size: ${width}mm ${height}mm landscape;margin: 0;}}`; }
     function formatDateForDisplay(date) { const d=date.getDate().toString().padStart(2,'0'),m=(date.getMonth()+1).toString().padStart(2,'0'),y=date.getFullYear().toString().slice(-2); return `${d}/${m}/${y}`; }
     function formatDateForQR(date) { const d=date.getDate().toString().padStart(2,'0'),m=(date.getMonth()+1).toString().padStart(2,'0'),y=date.getFullYear().toString().slice(-2); return `${d}${m}${y}`; }
@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (labelWidth < thresholdWidth) {
                 labelItem.classList.add('small-layout');
-                labelItem.innerHTML = `<div class="qr-code-area" id="barcode-area-${i}"></div><div class="small-layout-text">${qrData}</div>`;
+                labelItem.innerHTML = `<canvas class="barcode-canvas" id="barcode-${i}"></canvas><div class="small-layout-text">${qrData}</div>`;
             } else {
                 labelItem.innerHTML = `
-                    <div class="qr-code-area" id="barcode-area-${i}"></div>
+                    <div class="qr-code-area"><canvas class="barcode-canvas" id="barcode-${i}"></canvas></div>
                     <div class="data-fields-qr">
                         <div><strong>Dis. FCA:</strong> ${partNumber}</div>
                         <div><strong>Supplier:</strong> ${supplierCode}</div>
@@ -56,19 +56,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             labelsContainer.appendChild(labelItem);
 
+            // --- ISPRAVLJENA LOGIKA ZA GENERISANJE NA CANVAS-u VISOKE REZOLUCIJE ---
             try {
-                // --- ISPRAVKA JE OVDE ---
-                // Uklonili smo .default
-                let svg = bwipjs({
-                    bcid:        'datamatrix',
-                    text:        qrData,
-                    scale:       5,
-                    includetext: false,
+                bwipjs.toCanvas(`barcode-${i}`, {
+                    bcid:        'datamatrix',   // Tip koda
+                    text:        qrData,         // Podaci
+                    scale:       4,              // Skala za visoku rezoluciju (veći broj = oštrija štampa)
+                    includetext: false,          // Nema teksta
                 });
-                document.getElementById(`barcode-area-${i}`).innerHTML = svg;
             } catch (e) {
                 console.error(e);
-                document.getElementById(`barcode-area-${i}`).innerHTML = "Greška!";
+                let canvas = document.getElementById(`barcode-${i}`);
+                if (canvas) {
+                    let ctx = canvas.getContext('2d');
+                    ctx.fillText('Greška!', 10, 20);
+                }
             }
         }
         
