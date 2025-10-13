@@ -56,20 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             labelsContainer.appendChild(labelItem);
 
-            // --- PROMENA: GENERISANJE SVG-a UMESTO CANVAS-a ---
             try {
-                // bwip-js sada vraća SVG kao tekstualni string
-                let svg = bwipjs.default({
-                    bcid:        'datamatrix',   // Tip koda
-                    text:        qrData,         // Podaci
-                    scale:       5,              // Relativna veličina (veći broj = veći kod)
-                    includetext: false,          // Nema teksta unutar SVG-a
+                // --- ISPRAVKA JE OVDE ---
+                // Uklonili smo .default
+                let svg = bwipjs({
+                    bcid:        'datamatrix',
+                    text:        qrData,
+                    scale:       5,
+                    includetext: false,
                 });
-                // Direktno ubacujemo SVG kod u odgovarajući div
                 document.getElementById(`barcode-area-${i}`).innerHTML = svg;
             } catch (e) {
                 console.error(e);
-                // Opciono: prikaži grešku korisniku
                 document.getElementById(`barcode-area-${i}`).innerHTML = "Greška!";
             }
         }
