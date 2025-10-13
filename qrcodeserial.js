@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('date-input').valueAsDate = new Date();
 
     const generateBtn = document.getElementById('generate-btn');
-    const exportCsvBtn = document.getElementById('export-csv-btn');
+    const printBtn = document.getElementById('print-btn'); // Vraćeno na printBtn
     const labelsContainer = document.getElementById('labels-container');
-    
-    let generatedDataForCsv = [];
+
+    // Nema više 'generatedDataForCsv' niza
 
     function updatePrintStyles(width, height) {
         let styleTag = document.getElementById('print-styles');
@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updatePrintStyles(labelWidth, labelHeight);
         labelsContainer.innerHTML = '';
-        generatedDataForCsv = [];
         const selectedDate = new Date(dateInput);
         const displayDate = formatDateForDisplay(selectedDate);
         const qrDate = formatDateForQR(selectedDate);
@@ -68,15 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentSerial = padSerialNumber(i);
             const qrData = partNumber + supplierCode + currentSerial + qrDate;
 
-            generatedDataForCsv.push({partNumber, supplierCode, serialNumber: currentSerial, displayDate, qrData});
+            // Nema više .push() u CSV niz
 
             const labelItem = document.createElement('div');
             labelItem.className = 'label-item';
             const thresholdWidth = 50;
-
-            const printableHeightMM = labelHeight - 4; // 4mm = 2 * 2mm padding
+            
+            const printableHeightMM = labelHeight - 4;
             const printableWidthMM = labelWidth - 4;
-            const baseDimensionMM = Math.min(printableWidthMM, printableHeightMM) * 0.9; // 90% manje dimenzije
+            let baseDimensionMM = Math.min(printableWidthMM, printableHeightMM) * 0.9;
+            
+            if (labelWidth < thresholdWidth) {
+                 baseDimensionMM = printableHeightMM * 0.8;
+            } else {
+                 baseDimensionMM = Math.min(printableWidthMM * 0.4, printableHeightMM * 0.9);
+            }
+            
             const matrixSizePX = Math.round(baseDimensionMM * 3.78);
 
             if (labelWidth < thresholdWidth) {
@@ -111,21 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (quantity > 0) {
-            exportCsvBtn.style.display = 'block';
+            printBtn.style.display = 'block'; // Prikazujemo dugme za štampu
         }
     });
 
-    exportCsvBtn.addEventListener('click', () => {
-        if (generatedDataForCsv.length === 0) { return; }
-        const headers = '"PartNumber","SupplierCode","SerialNumber","DisplayDate","QRData"';
-        const rows = generatedDataForCsv.map(d => `"${d.partNumber}","${d.supplierCode}","${d.serialNumber}","${d.displayDate}","${d.qrData}"`);
-        const csvContent = [headers, ...rows].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "nalepnice_za_stampu.csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // VRAĆENA FUNKCIJA ZA DUGME "ODŠTAMPAJ SVE"
+    printBtn.addEventListener('click', () => {
+        window.print();
     });
 });
