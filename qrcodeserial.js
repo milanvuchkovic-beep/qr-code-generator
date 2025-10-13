@@ -2,45 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('date-input').valueAsDate = new Date();
 
     const generateBtn = document.getElementById('generate-btn');
-    const printBtn = document.getElementById('print-btn'); // Vraćeno na printBtn
+    const printBtn = document.getElementById('print-btn');
     const labelsContainer = document.getElementById('labels-container');
 
-    // Nema više 'generatedDataForCsv' niza
-
-    function updatePrintStyles(width, height) {
-        let styleTag = document.getElementById('print-styles');
-        if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.id = 'print-styles';
-            document.head.appendChild(styleTag);
-        }
-        styleTag.innerHTML = `
-            @media print {
-                @page {
-                    size: ${width}mm ${height}mm landscape;
-                    margin: 0;
-                }
-            }
-        `;
-    }
-
-    function formatDateForDisplay(date) {
-        const d = date.getDate().toString().padStart(2, '0');
-        const m = (date.getMonth() + 1).toString().padStart(2, '0');
-        const y = date.getFullYear().toString().slice(-2);
-        return `${d}/${m}/${y}`;
-    }
-
-    function formatDateForQR(date) {
-        const d = date.getDate().toString().padStart(2, '0');
-        const m = (date.getMonth() + 1).toString().padStart(2, '0');
-        const y = date.getFullYear().toString().slice(-2);
-        return `${d}${m}${y}`;
-    }
-
-    function padSerialNumber(num) {
-        return num.toString().padStart(5, '0');
-    }
+    // Sve helper funkcije ostaju iste...
+    function updatePrintStyles(width, height) { let styleTag=document.getElementById('print-styles');if(!styleTag){styleTag=document.createElement('style');styleTag.id='print-styles';document.head.appendChild(styleTag)}styleTag.innerHTML=`@media print {@page {size: ${width}mm ${height}mm landscape;margin: 0;}}`; }
+    function formatDateForDisplay(date) { const d=date.getDate().toString().padStart(2,'0'),m=(date.getMonth()+1).toString().padStart(2,'0'),y=date.getFullYear().toString().slice(-2); return `${d}/${m}/${y}`; }
+    function formatDateForQR(date) { const d=date.getDate().toString().padStart(2,'0'),m=(date.getMonth()+1).toString().padStart(2,'0'),y=date.getFullYear().toString().slice(-2); return `${d}${m}${y}`; }
+    function padSerialNumber(num) { return num.toString().padStart(5, '0'); }
 
     generateBtn.addEventListener('click', () => {
         const partNumber = document.getElementById('part-number').value.toUpperCase();
@@ -66,31 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = startSerial; i <= endSerial; i++) {
             const currentSerial = padSerialNumber(i);
             const qrData = partNumber + supplierCode + currentSerial + qrDate;
-
-            // Nema više .push() u CSV niz
-
             const labelItem = document.createElement('div');
             labelItem.className = 'label-item';
             const thresholdWidth = 50;
-            
-            const printableHeightMM = labelHeight - 4;
-            const printableWidthMM = labelWidth - 4;
-            let baseDimensionMM = Math.min(printableWidthMM, printableHeightMM) * 0.9;
-            
-            if (labelWidth < thresholdWidth) {
-                 baseDimensionMM = printableHeightMM * 0.8;
-            } else {
-                 baseDimensionMM = Math.min(printableWidthMM * 0.4, printableHeightMM * 0.9);
-            }
-            
-            const matrixSizePX = Math.round(baseDimensionMM * 3.78);
 
             if (labelWidth < thresholdWidth) {
                 labelItem.classList.add('small-layout');
-                labelItem.innerHTML = `<canvas class="barcode-canvas" id="barcode-${i}"></canvas><div class="small-layout-text">${qrData}</div>`;
+                labelItem.innerHTML = `<div class="qr-code-area" id="barcode-area-${i}"></div><div class="small-layout-text">${qrData}</div>`;
             } else {
                 labelItem.innerHTML = `
-                    <div class="qr-code-area"><canvas class="barcode-canvas" id="barcode-${i}"></canvas></div>
+                    <div class="qr-code-area" id="barcode-area-${i}"></div>
                     <div class="data-fields-qr">
                         <div><strong>Dis. FCA:</strong> ${partNumber}</div>
                         <div><strong>Supplier:</strong> ${supplierCode}</div>
@@ -102,26 +56,29 @@ document.addEventListener('DOMContentLoaded', () => {
             
             labelsContainer.appendChild(labelItem);
 
+            // --- PROMENA: GENERISANJE SVG-a UMESTO CANVAS-a ---
             try {
-                let canvas = document.getElementById(`barcode-${i}`);
-                bwipjs.toCanvas(canvas, {
-                    bcid: 'datamatrix',
-                    text: qrData,
-                    height: matrixSizePX,
-                    width: matrixSizePX,
-                    includetext: false,
+                // bwip-js sada vraća SVG kao tekstualni string
+                let svg = bwipjs.default({
+                    bcid:        'datamatrix',   // Tip koda
+                    text:        qrData,         // Podaci
+                    scale:       5,              // Relativna veličina (veći broj = veći kod)
+                    includetext: false,          // Nema teksta unutar SVG-a
                 });
+                // Direktno ubacujemo SVG kod u odgovarajući div
+                document.getElementById(`barcode-area-${i}`).innerHTML = svg;
             } catch (e) {
                 console.error(e);
+                // Opciono: prikaži grešku korisniku
+                document.getElementById(`barcode-area-${i}`).innerHTML = "Greška!";
             }
         }
         
         if (quantity > 0) {
-            printBtn.style.display = 'block'; // Prikazujemo dugme za štampu
+            printBtn.style.display = 'block';
         }
     });
 
-    // VRAĆENA FUNKCIJA ZA DUGME "ODŠTAMPAJ SVE"
     printBtn.addEventListener('click', () => {
         window.print();
     });
