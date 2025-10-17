@@ -1,166 +1,116 @@
+// ----------------------------------------------------------------------
+// 1. INICIJALIZACIJA I DVA BASE URL-a
+// ----------------------------------------------------------------------
+
+/**
+ * Izvlači ID stanice (npr. 'PR05') iz URL parametra 'id'.
+ */
+function getStationIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let stationId = urlParams.get('id'); 
+    return stationId ? stationId.toUpperCase() : 'PR01'; 
+}
+
+const CURRENT_STATION_ID = getStationIdFromUrl();
+
+// GLAVNI URL ZA OPERATIVNE APLIKACIJE (Smena, Pauza, Planiranje, Primopredaja)
+const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbzzVwEs83KIH-M0ExKxifDBdCzvZNockcvhFUhFkZPQYMD1rOqmxIy90lOt4C1deHau/exec';
+
+// NOVI URL ZA APLIKACIJU KORISNIKA (Različiti Deployment)
+const USERS_APP_BASE_URL = 'https://script.google.com/macros/s/AKfycbzaJTI4siLOc_VbXKoyF4I93SWfmkLPZVOQTreSZlgkPOfh2Cp3NrcpzOi9UMCnRDlh/exec';
+
+
+// Ažuriranje glavnog naslova na stranici čim se dokument učita
 document.addEventListener('DOMContentLoaded', () => {
-
-    const bulkInput = document.getElementById('bulk-input');
-    const excelUpload = document.getElementById('excel-upload');
-    const fileNameSpan = document.getElementById('file-name');
-    const generateBtn = document.getElementById('generate-bulk-btn');
-    const qrcodeContainer = document.getElementById('qrcode-container');
-    const outputHeader = document.getElementById('output-header');
-    const downloadZipBtn = document.getElementById('download-zip-btn');
-    const clearBtn = document.getElementById('clear-btn'); 
-    
-    let uploadedFile = null;
-
-    // Prikazuje ime otpremljenog fajla
-    excelUpload.addEventListener('change', (event) => {
-        if (event.target.files.length > 0) {
-            uploadedFile = event.target.files[0];
-            fileNameSpan.textContent = uploadedFile.name;
-            bulkInput.value = ''; // Očisti textarea ako je fajl izabran
-        }
-    });
-
-    // Glavna funkcija koja se poziva na klik
-    generateBtn.addEventListener('click', async () => {
-        let data = [];
-        
-        if (uploadedFile) {
-            data = await parseExcelFile(uploadedFile);
-        } else {
-            data = parseTextarea();
-        }
-
-        if (data.length === 0) {
-            alert("Nema podataka za generisanje. Molimo unesite podatke u polje ili otpremite fajl.");
-            return;
-        }
-
-        generateQRCodes(data);
-    });
-
-    // Funkcija za parsiranje teksta iz textarea
-    function parseTextarea() {
-        return bulkInput.value
-            .split('\n')
-            .map(line => line.trim())
-            .filter(line => line !== "");
+    const mainTitleElement = document.getElementById('mainTitle');
+    if (mainTitleElement) {
+        mainTitleElement.textContent = `Radna stanica ${CURRENT_STATION_ID}`;
     }
-
-    // Funkcija za parsiranje Excel fajla
-    function parseExcelFile(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = new Uint8Array(event.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    // Konvertuje sheet u niz nizova (samo prva kolona)
-                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    const result = json
-                        .map(row => row[0]) // Uzimamo samo prvu ćeliju iz svakog reda
-                        .filter(item => item !== null && item !== undefined && item.toString().trim() !== "");
-                    resolve(result);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        });
-    }
-
-    // Funkcija koja generiše i prikazuje QR kodove
-    function generateQRCodes(data) {
-        qrcodeContainer.innerHTML = ''; // Očisti prethodne rezultate
-
-        data.forEach(itemText => {
-            const text = itemText.toString();
-
-            // Kreira kontejner za jedan QR kod i njegovu etiketu
-            const qrItem = document.createElement('div');
-            qrItem.className = 'qr-item';
-
-            // Mesto gde će se crtati QR kod
-            const qrCodeDiv = document.createElement('div');
-
-            // Etiketa sa sadržajem
-            const label = document.createElement('p');
-            label.className = 'qr-label';
-            label.textContent = text;
-
-            qrItem.appendChild(qrCodeDiv);
-            qrItem.appendChild(label);
-            qrcodeContainer.appendChild(qrItem);
-
-            // Generiše QR kod
-            new QRCode(qrCodeDiv, {
-                text: text,
-                width: 160,
-                height: 160,
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        });
-
-        // Prikazuje zaglavlje sa dugmetom za preuzimanje ako ima rezultata
-        outputHeader.style.display = data.length > 0 ? 'flex' : 'none';
-    }
-
-    // Funkcija za preuzimanje svih kodova kao ZIP
-    downloadZipBtn.addEventListener('click', () => {
-        const zip = new JSZip();
-        const qrItems = document.querySelectorAll('.qr-item');
-        
-        if (qrItems.length === 0) {
-            alert("Nema kodova za preuzimanje.");
-            return;
-        }
-
-        qrItems.forEach((item, index) => {
-            const canvas = item.querySelector('canvas');
-            const img = item.querySelector('img');
-            const label = item.querySelector('.qr-label').textContent;
-
-            // Sanitizacija imena fajla (uklanjanje nedozvoljenih karaktera)
-            const fileName = label.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.png';
-            
-            // QRCode.js može generisati ili canvas ili img. Proveravamo oba.
-            if (canvas) {
-                const imageData = canvas.toDataURL('image/png').split(',')[1];
-                zip.file(fileName, imageData, { base64: true });
-            } else if (img) {
-                const imageData = img.src.split(',')[1];
-                zip.file(fileName, imageData, { base64: true });
-            }
-        });
-
-        zip.generateAsync({ type: 'blob' }).then(content => {
-            // Kreiranje linka za preuzimanje
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = 'qr_kodovi.zip';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    });
-
-            // Funkcionalnost za dugme "Očisti"
-        clearBtn.addEventListener('click', () => {
-            // 1. Očisti tekstualno polje
-            bulkInput.value = '';
-        
-            // 2. Očisti prikazane QR kodove
-            qrcodeContainer.innerHTML = '';
-        
-            // 3. Sakrij zaglavlje sa dugmetom za preuzimanje
-            outputHeader.style.display = 'none';
-        
-            // 4. Resetuj informaciju o otpremljenom fajlu
-            excelUpload.value = null; // Ovo omogućava ponovni upload istog fajla
-            uploadedFile = null;
-            fileNameSpan.textContent = 'Nijedan fajl nije izabran';
-        });
-
 });
+
+
+// ----------------------------------------------------------------------
+// 2. FUNKCIJA ZA OTVARANJE (Sada prima opcioni Base URL)
+// ----------------------------------------------------------------------
+
+/**
+ * Obrađuje klik na dugme menija i kreira URL sa parametrima 'page' i 'id'.
+ * @param {string} buttonId - HTML ID dugmeta.
+ * @param {string} originalText - Tekst dugmeta.
+ * @param {string} pageName - Page parametar.
+ * @param {boolean} [includeId=true] - Da li uključiti &id=PRXX.
+ * @param {string} [baseUrlOverride=APPS_SCRIPT_BASE_URL] - Opcioni URL za Korisnike.
+ */
+function handleMenuClick(buttonId, originalText, pageName, includeId = true, baseUrlOverride = APPS_SCRIPT_BASE_URL) {
+    const dugme = document.getElementById(buttonId);
+    const statusMessageElement = document.getElementById('statusMessage');
+    // Koristimo encodeURIComponent za celu putanju, rešavajući problem povratka iz subfoldera
+    const fullPath = encodeURIComponent(window.location.href);
+    
+    if (dugme && statusMessageElement) {
+        dugme.addEventListener('click', function() {
+            if (dugme.classList.contains('loading-state')) {
+                return; 
+            }
+            
+            // 1. VIZUELNI FEEDBACK: Prikazivanje statusne poruke
+            statusMessageElement.textContent = `OTVARANJE: ${originalText}...`;
+            statusMessageElement.classList.add('visible');
+            dugme.classList.add('loading-state');
+            
+            // 2. KREIRANJE CILJNOG URL-a
+            let targetUrl = `${baseUrlOverride}?page=${pageName}&source=${fullPath}`;
+            
+            if (includeId) {
+                targetUrl += `&id=${CURRENT_STATION_ID}`;
+            }
+
+            // 3. STVARNO PREUSMERAVANJE (Otvaranje WebApp u istom prozoru)
+            window.location.href = targetUrl; 
+        });
+    } else {
+        // Loguje grešku samo ako je element definisan u connectButtonIfPresent
+        console.error(`ERROR: Element with ID ${buttonId} or statusMessage not found.`);
+    }
+}
+
+
+/**
+ * Povezuje logiku sa dugmetom samo ako ono zaista postoji na stranici (rešavanje problema portala)
+ */
+function connectButtonIfPresent(buttonId, originalText, pageName, includeId, baseUrlOverride) {
+    const element = document.getElementById(buttonId);
+    if (element) {
+        // Prosleđujemo sve argumente funkciji handleMenuClick
+        handleMenuClick(buttonId, originalText, pageName, includeId, baseUrlOverride);
+    }
+}
+
+// ----------------------------------------------------------------------
+// 3. POVEZIVANJE DUGMADI SA ISPRAVNIM PAGE PARAMETRIMA
+// ----------------------------------------------------------------------
+
+// *** LOGIKA GLAVNE KOMANDNE TABLE (index.html) ***
+connectButtonIfPresent('prijavaSmeneDugme', 'Prijava smene (OPERATERI)', 'smena', true);
+connectButtonIfPresent('prijavaSkartaDugme', 'Prijava škarta', 'proizvodnja_v2', true);
+connectButtonIfPresent('prijavaPauzaDugme', 'Prijava pauza', 'pauza', true);
+connectButtonIfPresent('izmenaParametaraDugme', 'Izmena parametara', 'izmena_parametara', true);
+connectButtonIfPresent('prijavaKvalitetaDugme', 'Prijava kvaliteta', 'paznja', true);
+connectButtonIfPresent('playDugme', 'START/POČETAK', 'pocetak', true);
+connectButtonIfPresent('stopDugme', 'STOP/KRAJ', 'kraj', true);
+connectButtonIfPresent('zastojiDugme', 'ZASTOJ', 'zastoj', true);
+
+
+// *** LOGIKA ZA SPECIJALIZOVANE PORTALE (sefovi.html, regleri.html, planiranje.html) ***
+
+// 1. PORTAL ZA ŠEFOVE (Ne šalje ID)
+connectButtonIfPresent('primopredajaDugmeSef', 'Primopredaja smene (ŠEFOVI)', 'primopredaja', false); 
+
+// 2. PORTAL ZA REGLERE (Ne šalje ID)
+connectButtonIfPresent('reglerDugme', 'Regler aplikacija', 'alati', false);
+
+// 3. PORTAL ZA PLANIRANJE (Ne šalje ID)
+connectButtonIfPresent('planiranjeDugme', 'Planiranje proizvodnje', 'planiranje', false);
+
+// 4. NOVO: PORTAL ZA KORISNIKE (Ne šalje ID - Koristi poseban Base URL)
+connectButtonIfPresent('korisniciDugme', 'Upravljanje korisnicima', 'korisnici', false, USERS_APP_BASE_URL);
