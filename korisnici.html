@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal za Korisnike</title>
+    
+    <!-- Link ka Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- POVEZIVANJE EKSTERNOG CSS FAJLA -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Diskretan statusni natpis za "OTVARANJE..." -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <header class="top-nav">
+        <div class="left-side">
+            <div class="pogon-logo">
+                <img id="pogonLogoImg" src="https://i.postimg.cc/L6KLbH84/Pogon-io-LOGO-vertical.png" alt="Pogon.io Logo">
+                Pogon.io
+            </div>
+        </div>
+    </header>
+
+    <!-- KORISTI KLASU 'korisnici-background' ZA TEMATSKU POZADINU -->
+    <div class="content-wrapper portal-background korisnici-background" style="max-width: 600px; padding-top: 50px;">
+        
+        <h1 class="main-title" style="color: #ffffff; text-align: center; margin-bottom: 40px; font-size: 36px; text-shadow: 1px 1px 3px rgba(0,0,0,0.7);">Portal za Korisnike</h1>
+        
+        <!-- JEDNO DUGME ZA KORISNIKE -->
+        <div class="supervisor-section">
+            <button class="supervisor-button" id="korisniciDugme">
+                <i class="fas fa-user-plus"></i> Upravljanje korisnicima
+            </button>
+        </div>
+
+    </div>
+
+    <!-- POVEZIVANJE EKSTERNOG JAVASCRIPT FAJLA -->
+    <script src="js/script.js"></script>
+</body>
+</html>
