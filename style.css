@@ -179,4 +179,12 @@ textarea {
         max-width: 100px; /* Možemo malo smanjiti i logo */
     }
 }
+/* --- POZADINA PORTALA ZA KORISNIKE --- */
+.portal-background.korisnici-background {
+    /* OBAVEZNO ZAMENITE SA VAŠIM URL-om slike za Korisnike */
+    background-image: url('URL_VAŠE_SLIKE_ZA_KORISNIKE'); 
+    
+    /* Pojačavamo kontrast zbog bele ikone/teksta */
+    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.7); 
+}
 
