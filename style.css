@@ -36,7 +36,6 @@ textarea {
     resize: vertical;
 }
 
-/* Stil za sakrivanje default file inputa i stilizovanje label-a */
 #excel-upload {
     display: none;
 }
@@ -61,8 +60,16 @@ textarea {
     margin-bottom: 15px;
 }
 
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.button-group button {
+    flex-grow: 1;
+}
 
-#generate-bulk-btn, #download-zip-btn {
+#generate-bulk-btn, #download-zip-btn, #clear-btn {
     width: 100%;
     padding: 12px;
     background-color: #007bff;
@@ -74,16 +81,20 @@ textarea {
     transition: background-color 0.3s ease;
     margin-bottom: 10px;
 }
-
-#generate-bulk-btn:hover, #download-zip-btn:hover {
+#generate-bulk-btn:hover, #download-zip-btn:hover, #clear-btn:hover {
     background-color: #0056b3;
 }
-
 #download-zip-btn {
     background-color: #28a745;
 }
 #download-zip-btn:hover {
     background-color: #218838;
+}
+#clear-btn {
+    background-color: #6c757d;
+}
+#clear-btn:hover {
+    background-color: #5a6268;
 }
 
 #output-header {
@@ -95,7 +106,6 @@ textarea {
     padding-top: 20px;
 }
 
-/* Grid za prikaz QR kodova */
 #qrcode-container {
     margin-top: 20px;
     display: grid;
@@ -122,69 +132,23 @@ textarea {
     font-size: 12px;
     font-weight: bold;
     color: #333;
-
 }
 
-.button-group {
-    display: flex;
-    gap: 10px; /* Mali razmak između dugmića */
-    margin-top: 15px; /* Odvajanje od elemenata iznad */
-}
-
-.button-group button {
-    flex-grow: 1; /* Omogućava da oba dugmeta zauzmu podjednako prostora */
-}
-
-/* Stil za novo dugme "Očisti" */
-#clear-btn {
-    background-color: #6c757d; /* Neutralna siva boja */
-    color: white;
-}
-
-#clear-btn:hover {
-    background-color: #5a6268;
-}
-
-/* =================================== */
-/* === Optimizacija za mobilne uređaje === */
-/* =================================== */
-
-/* Pravila unutar ovog bloka primenjivaće se samo na ekranima užim od 600px */
 @media (max-width: 600px) {
-
-    /* Smanjujemo padding glavnog kontejnera da dobijemo više prostora */
     .container {
         padding: 15px;
-        width: 95%; /* Zauzimamo malo više širine ekrana */
+        width: 95%;
     }
-
-    /* Menjamo prikaz QR kodova u jednu kolonu */
     #qrcode-container {
-        /* Umesto više kolona, sada će biti samo jedna */
         grid-template-columns: 1fr;
-        gap: 15px; /* Smanjujemo i razmak između kodova */
+        gap: 15px;
     }
-
-    /* Dugmiće stavljamo jedan ispod drugog radi bolje preglednosti */
     .button-group {
         flex-direction: column;
     }
-
-    /* Malo smanjujemo naslov da lepše stane */
     h1 {
         font-size: 26px;
     }
+}
 
-    .logo {
-        max-width: 100px; /* Možemo malo smanjiti i logo */
-    }
-}
-/* --- POZADINA PORTALA ZA KORISNIKE --- */
-.portal-background.korisnici-background {
-    /* OBAVEZNO ZAMENITE SA VAŠIM URL-om slike za Korisnike */
-    background-image: url('URL_VAŠE_SLIKE_ZA_KORISNIKE'); 
-    
-    /* Pojačavamo kontrast zbog bele ikone/teksta */
-    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.7); 
-}
 
