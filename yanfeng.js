@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2_LvmZ-F7CRoGIxRHS9-K2v9RAGbzHWkpQ78tfgkD0oxYhxRVYgA5KVmaydJ25FpoKTPsLSTab8c4/pub?gid=0&single=true&output=csv';
     const logoUrl = 'https://i.postimg.cc/bvf1L9vn/File-Porsche-Warenzeichen-Wikimedia-Commons-Org-Design-Porsche-Warenzeichen-PNG-Image-Transparen.jpg';
     const companyName = "SIGIT DOO";
+    const dunsNumber = '499504686'; // Fiksni DUNS broj dobavljača
 
     // --- ELEMENTI ---
     const pnSelect = document.getElementById('pn-select');
     const quantityInput = document.getElementById('quantity');
     const startSerialInput = document.getElementById('start-serial');
-    // const statusInput = document.getElementById('product-status'); // VIŠE NAM NE TREBA
     const generateBtn = document.getElementById('generate-btn');
     const printBtn = document.getElementById('print-btn');
     const labelsContainer = document.getElementById('labels-container');
@@ -21,13 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Poboljšana funkcija za parsiranje CSV-a (uklanja navodnike)
     function parseCSV(csvText) {
         const lines = csvText.split('\n');
-        // Uklanjamo navodnike (") i razmake sa početka/kraja zaglavlja
         const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         const data = [];
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i];
             if (!line.trim()) continue;
-            // Uklanjamo navodnike (") i razmake sa početka/kraja vrednosti
             const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
             let obj = {};
             headers.forEach((header, index) => {
@@ -47,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // =================================================================
             // === VAŽNO: Ovde upiši tačan naziv kolone (iz ćelije A1) ===
-            const pnHeader = 'Sigit PN'; 
+            const pnHeader = 'Sigit_PN'; 
             // =================================================================
 
             pnSelect.innerHTML = '<option value="">-- Izaberi PN --</option>';
@@ -62,21 +60,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 3. Funkcija za formatiranje datuma u DD.MM.YYYY
-    function getFormattedDate() {
-        const date = new Date();
+    // 3. Funkcija za formatiranje datuma u DDMMYYYY (za Data Matrix)
+    function getDMDate(date) {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear().toString(); // Puna godina YYYY
+        return `${d}${m}${y}`;
+    }
+
+    // 4. Funkcija za formatiranje datuma za PRIKAZ (DD.MM.YYYY)
+    function getDisplayDate(date) {
         const d = date.getDate().toString().padStart(2, '0');
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
         const y = date.getFullYear();
         return `${d}.${m}.${y}`;
     }
 
-    // 4. Funkcija za formatiranje serijskog broja
+    // 5. Funkcija za formatiranje serijskog broja
     function padSerialNumber(num) {
         return num.toString().padStart(5, '0');
     }
 
-    // 5. Glavna funkcija za generisanje nalepnica
+    // 6. Glavna funkcija za generisanje nalepnica
     function generateLabels() {
         const selectedIndex = pnSelect.value;
         if (selectedIndex === "") {
@@ -87,35 +92,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedRow = sheetData[selectedIndex];
         const quantity = parseInt(quantityInput.value, 10);
         const startSerial = parseInt(startSerialInput.value, 10);
-        const currentDate = getFormattedDate();
+        
+        const currentDate = new Date();
+        const displayDate = getDisplayDate(currentDate); // Za prikaz: 23.10.2025
+        const dmDate = getDMDate(currentDate);           // Za kod: 23102025
 
         // =================================================================
-        // === VAŽNO: Ovde upiši tačan naziv kolone (iz ćelije F1) ===
+        // === VAŽNO: Ovde upiši tačne nazive zaglavlja iz tvog Google Sheet-a ===
+        
+        // Naziv kolone C (za prikaz iznad logoa)
+        const manufacturerCodeHeader = 'Aggregation'; 
+        // Naziv kolone D (za prikaz u desnoj koloni)
+        const productionSiteHeader = 'Country'; 
+        // Naziv kolone F (za status i za kod)
         const statusHeader = 'Change number'; 
+        // Naziv kolone G (za kod)
+        const porschePNHeader = 'Porsche PN QR';
+        
         // =================================================================
+        
         const productStatus = selectedRow[statusHeader];
+        const porschePN = selectedRow[porschePNHeader];
+        const manufacturerCode = selectedRow[manufacturerCodeHeader];
+        const productionSite = selectedRow[productionSiteHeader];
+
 
         labelsContainer.innerHTML = '';
         
         for (let i = 0; i < quantity; i++) {
             const currentSerial = padSerialNumber(startSerial + i);
-            const dmData = `${selectedRow.Yanfeng_PN}|${selectedRow.Manufacturer_Code}|${currentDate}|${currentSerial}`;
+            
+            // --- KREIRANJE SADRŽAJA ZA DATA MATRIX PREMA NOVOJ SPECIFIKACIJI ---
+            const dmData = `${porschePN}#${currentSerial}#${dunsNumber}#${dmDate}=${productStatus}`;
 
             const labelEl = document.createElement('div');
             labelEl.className = 'label-item-yanfeng';
             
+            // --- POPRAVLJEN HTML ZA NALEPNICU ---
             labelEl.innerHTML = `
                 <div class="label-col col-1">
                     <canvas class="barcode-canvas" id="barcode-${i}"></canvas>
                 </div>
                 <div class="label-col col-2">
-                    <div>${selectedRow.Manufacturer_Code}</div>
+                    <div>${manufacturerCode}</div>
                     <img src="${logoUrl}" class="label-logo" alt="Logo">
                 </div>
                 <div class="label-col col-3">
-                    <div>${selectedRow.Production_Site}</div>
+                    <div>${productionSite}</div>
                     <div>${companyName}</div>
-                    <div>${currentDate}</div>
+                    <div>${displayDate}</div>
                     <div>${currentSerial}</div>
                     <div>${productStatus}</div>
                 </div>
@@ -125,7 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 bwipjs.toCanvas(`barcode-${i}`, {
-                    bcid: 'datamatrix', text: dmData, scale: 5, width: 10, height: 10, includetext: false,
+                    bcid: 'datamatrix', 
+                    text: dmData, // Ubacujemo novi sadržaj koda
+                    scale: 5, 
+                    width: 10, 
+                    height: 10, 
+                    includetext: false,
                 });
             } catch (e) { console.error('Greška pri crtanju bar koda:', e); }
         }
