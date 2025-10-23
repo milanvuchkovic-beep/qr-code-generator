@@ -152,6 +152,3 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBtn.addEventListener('click', generateLabels);
     printBtn.addEventListener('click', () => window.print());
 });
-    generateBtn.addEventListener('click', generateLabels);
-    printBtn.addEventListener('click', () => window.print());
-});
