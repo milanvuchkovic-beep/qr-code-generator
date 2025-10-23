@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yanfeng Nalepnice Generator</title>
+    <link rel="stylesheet" href="yanfeng.css">
+</head>
+<body>
+
+    <div class="container no-print">
+        <h1>Yanfeng Nalepnice Generator</h1>
+        <p>Alat za generisanje serijskih nalepnica 35x14mm.</p>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label for="pn-select">Izaberi Sigit Part Number:</label>
+                <select id="pn-select" disabled>
+                    <option value="">Učitavam podatke...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity">Količina nalepnica</label>
+                <input type="number" id="quantity" min="1" value="10">
+            </div>
+
+            <div class="form-group">
+                <label for="start-serial">Početni serijski broj</label>
+                <input type="number" id="start-serial" min="1" value="1">
+            </div>
+
+            <div class="form-group">
+                <label for="product-status">Status proizvoda (npr. 01S)</label>
+                <input type="text" id="product-status" value="01S">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="generate-btn" disabled>Generiši</button>
+            <button id="print-btn" style="display: none;">Odštampaj Sve</button>
+        </div>
+    </div>
+
+    <div id="labels-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bwip-js@3.2.1/dist/bwip-js-min.js"></script>
+    <script src="yanfeng.js"></script>
+</body>
+</html>
