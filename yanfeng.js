@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 bwipjs.toCanvas(`barcode-${i}`, {
-                    bcid: 'datatrix', 
+                    bcid: 'datamatrix', 
                     text: dmData,
                     scale: 5, 
                     width: 10, 
