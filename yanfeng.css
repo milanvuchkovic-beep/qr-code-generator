@@ -14,38 +14,23 @@ button:disabled { background-color: #ccc; }
 /* Prikaz nalepnica na ekranu */
 #labels-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 
-
-/* ======================================================== */
-/* === STILOVI ZA ŠTAMPU - NALEPNICA YANFENG 35x14mm === */
-/* ======================================================== */
-
-/* Ovo je stil za prikaz na ekranu, da liči na nalepnicu */
 .label-item-yanfeng {
-    width: 350px; /* Prikaz na ekranu je uvećan radi lakše provere */
+    width: 350px;
     height: 140px;
     border: 1px solid #000;
     padding: 10px;
     background: #fff;
     display: grid;
-    grid-template-columns: 1.1fr 0.8fr 1.1fr; /* 3 kolone kao na zelenoj nalepnici */
+    grid-template-columns: 1.1fr 0.8fr 1.1fr;
     gap: 5px;
-    box-sizing: border-box; /* Važno za precizne dimenzije */
+    box-sizing: border-box;
 }
-
-/* Stilovi za elemente unutar nalepnice */
 .label-col { display: flex; flex-direction: column; justify-content: center; }
-.label-col.col-1 { align-items: center; } /* Data Matrix */
-.label-col.col-2 { align-items: center; } /* Logo */
+.label-col.col-1 { align-items: center; }
+.label-col.col-2 { align-items: center; }
 .label-col.col-3 { font-size: 14px; font-family: 'Courier New', Courier, monospace; line-height: 1.2; }
-
-.label-logo {
-    width: 50px; /* Uvećan prikaz na ekranu */
-    height: auto;
-}
-.barcode-canvas {
-    width: 90px; /* Uvećan prikaz na ekranu */
-    height: 90px;
-}
+.barcode-canvas { width: 90px; height: 90px; }
+.label-logo { width: 50px; height: auto; }
 
 
 /* =================================== */
@@ -53,52 +38,64 @@ button:disabled { background-color: #ccc; }
 /* =================================== */
 
 @media print {
-    /* Definišemo stranicu tačno 35x14mm, položeno */
     @page {
         size: 35mm 14mm landscape;
         margin: 0;
     }
 
-    /* Sakrivamo sve osim nalepnica */
     .no-print { display: none; }
     body { background: none; margin: 0; padding: 0; }
     #labels-container { margin: 0; }
 
-    /* Definišemo nalepnicu za štampu */
     .label-item-yanfeng {
         width: 35mm;
         height: 14mm;
-        border: 0.5pt solid #000; /* Tanka ivica od 0.5pt */
+        border: 0.5pt solid #000;
         padding: 0.5mm;
         position: relative;
         overflow: hidden;
         page-break-after: always;
         page-break-inside: avoid;
-        
         display: grid;
-        grid-template-columns: 11mm 8mm 1fr; /* Precizne širine kolona */
+        grid-template-columns: 11mm 8mm 1fr;
         gap: 0.5mm;
     }
 
-    /* Prilagođavamo elemente za štampu */
     .label-col { justify-content: space-around; padding: 0.5mm 0; }
     .label-col.col-1 { padding-left: 0.5mm; }
     .label-col.col-2 { padding: 0.5mm 0; }
-    .label-col.col-3 {
-        /* Ovo je ključno: 1mm font je ~3pt */
+    .barcode-canvas { width: 10mm; height: 10mm; }
+    .label-logo { width: 6mm; height: 6mm; }
+
+    /* --- NOVI STILOVI ZA RASPORED I FONTOVE --- */
+    
+    /* 1. Smanjen font za "JFH" (Manufacturer Code) */
+    .manufacturer-code {
         font-family: Arial, sans-serif;
-        font-size: 3.5pt; /* ~1.2mm - Veoma sitno! */
-        line-height: 1.1;
+        font-size: 3pt; /* Još sitnije, po tvom zahtevu */
         font-weight: bold;
-        word-break: break-all;
+        text-align: center;
+    }
+
+    /* 2. Novi raspored za Kolonu 3 */
+    .label-col.col-3.new-layout {
+        justify-content: space-between; /* Gura gornji i donji deo na ivice */
+        text-align: left;
+        padding-left: 1mm;
     }
     
-    .barcode-canvas {
-        width: 10mm; /* Data Matrix zauzima 10x10mm */
-        height: 10mm;
+    /* 3. Porsche PN (Gornji deo) */
+    .pn-top {
+        font-family: Arial, sans-serif;
+        font-size: 4.5pt; /* Malo veći i boldovan za čitljivost */
+        font-weight: bold;
     }
-    .label-logo {
-        width: 6mm; /* Logo je visok 6mm kao na specifikaciji */
-        height: 6mm;
+
+    /* 4. Donji deo (Made in Serbia, SIGIT DOO) */
+    .company-bottom {
+        font-family: Arial, sans-serif;
+        font-size: 3.5pt; /* Ostavljamo sitno */
+        font-weight: normal; /* Manje boldirano = manje "razliveno" */
+        line-height: 1.2;
     }
 }
