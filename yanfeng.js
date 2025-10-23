@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentSerial = padSerialNumber(startSerial + i);
             
             // --- KREIRANJE SADRŽAJA ZA DATA MATRIX PREMA NOVOJ SPECIFIKACIJI ---
-            const dmData = `${porschePN}#${currentSerial}#${dunsNumber}#${dmDate}=${productStatus}`;
+            const dmData = `#${porschePN}#${currentSerial}#${dunsNumber}#${dmDate}=${productStatus}`;
 
             const labelEl = document.createElement('div');
             labelEl.className = 'label-item-yanfeng';
