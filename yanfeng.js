@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2_LvmZ-F7CRoGIxRHS9-K2v9RAGbzHWkpQ78tfgkD0oxYhxRVYgA5KVmaydJ25FpoKTPsLSTab8c4/pub?gid=0&single=true&output=csv';
     const logoUrl = 'https://i.postimg.cc/bvf1L9vn/File-Porsche-Warenzeichen-Wikimedia-Commons-Org-Design-Porsche-Warenzeichen-PNG-Image-Transparen.jpg';
     const companyName = "SIGIT DOO";
-    const dunsNumber = '499504686'; // Fiksni DUNS broj dobavljača
+    const dunsNumber = '499504686';
 
     // --- ELEMENTI ---
     const pnSelect = document.getElementById('pn-select');
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FUNKCIJE ---
 
-    // 1. Poboljšana funkcija za parsiranje CSV-a (uklanja navodnike)
+    // 1. Poboljšana funkcija za parsiranje CSV-a
     function parseCSV(csvText) {
         const lines = csvText.split('\n');
         const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sheetData = parseCSV(csvText);
 
             // =================================================================
-            // === VAŽNO: Ovde upiši tačan naziv kolone (iz ćelije A1) ===
+            // === VAŽNO: Proveri da li je 'Sigit_PN' tačan naziv kolone (iz A1) ===
             const pnHeader = 'Sigit PN'; 
             // =================================================================
 
@@ -64,24 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function getDMDate(date) {
         const d = date.getDate().toString().padStart(2, '0');
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
-        const y = date.getFullYear().toString(); // Puna godina YYYY
+        const y = date.getFullYear().toString();
         return `${d}${m}${y}`;
     }
 
-    // 4. Funkcija za formatiranje datuma za PRIKAZ (DD.MM.YYYY)
-    function getDisplayDate(date) {
-        const d = date.getDate().toString().padStart(2, '0');
-        const m = (date.getMonth() + 1).toString().padStart(2, '0');
-        const y = date.getFullYear();
-        return `${d}.${m}.${y}`;
-    }
-
-    // 5. Funkcija za formatiranje serijskog broja
+    // 4. Funkcija za formatiranje serijskog broja
     function padSerialNumber(num) {
         return num.toString().padStart(5, '0');
     }
 
-    // 6. Glavna funkcija za generisanje nalepnica
+    // 5. Glavna funkcija za generisanje nalepnica
     function generateLabels() {
         const selectedIndex = pnSelect.value;
         if (selectedIndex === "") {
@@ -94,20 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const startSerial = parseInt(startSerialInput.value, 10);
         
         const currentDate = new Date();
-        const displayDate = getDisplayDate(currentDate); // Za prikaz: 23.10.2025
-        const dmDate = getDMDate(currentDate);           // Za kod: 23102025
+        const dmDate = getDMDate(currentDate);
 
         // =================================================================
         // === VAŽNO: Ovde upiši tačne nazive zaglavlja iz tvog Google Sheet-a ===
         
-        // Naziv kolone C (za prikaz iznad logoa)
-        const manufacturerCodeHeader = 'Aggregation'; 
-        // Naziv kolone D (za prikaz u desnoj koloni)
-        const productionSiteHeader = 'Country'; 
-        // Naziv kolone F (za status i za kod)
-        const statusHeader = 'Change number'; 
-        // Naziv kolone G (za kod)
-        const porschePNHeader = 'Porsche PN QR';
+        const manufacturerCodeHeader = 'Aggregation'; // Kolona C
+        const productionSiteHeader = 'Country';     // Kolona D
+        const statusHeader = 'Change number';           // Kolona F
+        const porschePNHeader = 'Porsche PN QR';          // Kolona G
         
         // =================================================================
         
@@ -116,33 +103,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const manufacturerCode = selectedRow[manufacturerCodeHeader];
         const productionSite = selectedRow[productionSiteHeader];
 
-
         labelsContainer.innerHTML = '';
         
         for (let i = 0; i < quantity; i++) {
             const currentSerial = padSerialNumber(startSerial + i);
-            
-            // --- KREIRANJE SADRŽAJA ZA DATA MATRIX PREMA NOVOJ SPECIFIKACIJI ---
             const dmData = `#${porschePN}#${currentSerial}#${dunsNumber}#${dmDate}=${productStatus}`;
 
             const labelEl = document.createElement('div');
             labelEl.className = 'label-item-yanfeng';
             
-            // --- POPRAVLJEN HTML ZA NALEPNICU ---
+            // --- NOVI, IZMENJENI HTML RASPORED ---
             labelEl.innerHTML = `
                 <div class="label-col col-1">
                     <canvas class="barcode-canvas" id="barcode-${i}"></canvas>
                 </div>
                 <div class="label-col col-2">
-                    <div>${manufacturerCode}</div>
+                    <div class="manufacturer-code">${manufacturerCode}</div>
                     <img src="${logoUrl}" class="label-logo" alt="Logo">
                 </div>
-                <div class="label-col col-3">
-                    <div>${productionSite}</div>
-                    <div>${companyName}</div>
-                    <div>${displayDate}</div>
-                    <div>${currentSerial}</div>
-                    <div>${productStatus}</div>
+                <div class="label-col col-3 new-layout">
+                    <div class="pn-top">${porschePN}</div>
+                    <div class="company-bottom">
+                        <div>${productionSite}</div>
+                        <div>${companyName}</div>
+                    </div>
                 </div>
             `;
             
@@ -150,8 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 bwipjs.toCanvas(`barcode-${i}`, {
-                    bcid: 'datamatrix', 
-                    text: dmData, // Ubacujemo novi sadržaj koda
+                    bcid: 'datatrix', 
+                    text: dmData,
                     scale: 5, 
                     width: 10, 
                     height: 10, 
@@ -165,6 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- POVEZIVANJE DOGAĐAJA ---
     loadSheetData();
+    generateBtn.addEventListener('click', generateLabels);
+    printBtn.addEventListener('click', () => window.print());
+});
     generateBtn.addEventListener('click', generateLabels);
     printBtn.addEventListener('click', () => window.print());
 });
