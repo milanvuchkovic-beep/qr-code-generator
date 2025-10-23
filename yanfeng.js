@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // =================================================================
             // === VAŽNO: Ovde upiši tačan naziv kolone (iz ćelije A1) ===
-            const pnHeader = 'Sigit_PN'; 
+            const pnHeader = 'Sigit PN'; 
             // =================================================================
 
             pnSelect.innerHTML = '<option value="">-- Izaberi PN --</option>';
